@@ -1,0 +1,15 @@
+# secrets — NEVER commit keys (automatic zero per course rules)
+.env
+*.key
+**/secrets*
+
+# crawled data & build artifacts (large; reproducible from crawler)
+data/raw/
+data/test/
+index/
+__pycache__/
+*.pkl
+.DS_Store
+data/extracted/
+data/chunks/
+data/vectordb/
