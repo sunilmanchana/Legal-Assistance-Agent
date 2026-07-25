@@ -3,32 +3,32 @@
 An enterprise-style **Retrieval-Augmented Generation (RAG)** chatbot built for MSAI 633 (University of the Cumberlands). It crawls official U.S. government sources on non-immigrant visas (H-1B, F-1, B-2, L-1, O-1, and dependents), processes the content into searchable chunks, and answers questions using AI — grounded exclusively in real government policy text, with built-in safeguards against hallucination, outdated information, and prompt injection.
 
 ## Table of Contents
-- [What is RAG?](#what-is-rag)
-- [Project Overview](#project-overview)
-- [System Architecture](#system-architecture)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation & Setup](#installation--setup)
-- [Running the Application](#running-the-application)
-- [How Each Component Works](#how-each-component-works)
-  - [1. Web Crawler](#1-web-crawler-crawlercrawlpy)
-  - [2. Extraction](#2-extraction-crawlerextractpy)
-  - [3. Chunking](#3-chunking-crawlerchunkpy)
-  - [4-5. Embedding & Vector Database](#4-5-embedding--vector-database-crawlerembed_indexpy)
-  - [7-9. Retrieval, Reranking, Generation](#7-9-retrieval-reranking-generation-crawlerapppy)
-- [Data Flow: End to End](#data-flow-end-to-end)
-- [Configuration](#configuration)
-- [Ethics & Safety Safeguards](#ethics--safety-safeguards)
-- [Golden Evaluation Set & Results](#golden-evaluation-set--results)
-- [Key Design Decisions](#key-design-decisions)
-- [Troubleshooting](#troubleshooting)
-- [Future Enhancements](#future-enhancements)
-- [Course Requirements & AI Usage Disclosure](#course-requirements--ai-usage-disclosure)
+- [Retrieval-Augmented Generation: Conceptual Overview](#retrieval-augmented-generation-conceptual-overview)
+- [System Metrics and Corpus Summary](#system-metrics-and-corpus-summary)
+- [Pipeline Architecture Diagram](#pipeline-architecture-diagram)
+- [Software Dependencies and Libraries](#software-dependencies-and-libraries)
+- [Codebase Organization](#codebase-organization)
+- [System Requirements](#system-requirements)
+- [Environment Configuration and Installation](#environment-configuration-and-installation)
+- [Execution Instructions](#execution-instructions)
+- [Module-Level Implementation Details](#module-level-implementation-details)
+  - [Stage 1: Data Acquisition (Web Crawler)](#stage-1-data-acquisition-web-crawler)
+  - [Stage 2: Content Normalization (Extraction)](#stage-2-content-normalization-extraction)
+  - [Stage 3: Document Segmentation (Chunking)](#stage-3-document-segmentation-chunking)
+  - [Stages 4-5: Vector Representation and Indexing](#stages-4-5-vector-representation-and-indexing)
+  - [Stages 7-9: Retrieval, Reranking, and Response Generation](#stages-7-9-retrieval-reranking-and-response-generation)
+- [Query Processing Sequence](#query-processing-sequence)
+- [System Parameters and Hyperparameters](#system-parameters-and-hyperparameters)
+- [Responsible-AI Controls and Safety Mechanisms](#responsible-ai-controls-and-safety-mechanisms)
+- [Benchmark Dataset and Empirical Results](#benchmark-dataset-and-empirical-results)
+- [Architectural Rationale](#architectural-rationale)
+- [Diagnostic Reference](#diagnostic-reference)
+- [Planned Extensions](#planned-extensions)
+- [Academic Compliance and AI Tool Attribution](#academic-compliance-and-ai-tool-attribution)
 
 ---
 
-## What is RAG?
+## Retrieval-Augmented Generation: Conceptual Overview
 
 **RAG (Retrieval-Augmented Generation)** means the chatbot doesn't answer from memory alone — it first looks up the actual government text relevant to the question, then writes its answer using only that text as its source material.
 
@@ -48,7 +48,7 @@ This chatbot can answer questions like:
 
 ---
 
-## Project Overview
+## System Metrics and Corpus Summary
 
 **Key numbers (from real runs, not estimates):**
 
@@ -67,11 +67,11 @@ This chatbot can answer questions like:
 
 ---
 
-## System Architecture
+## Pipeline Architecture Diagram
 
 ```
 +-----------------------------------------------------------------------------+
-|                          DATA PIPELINE (run once, then as needed)            |
+|                          DATA PIPELINE (run once, then as needed)           |
 +-------------+--------------+----------------+-------------+----------------+
 |             |              |                |             |                |
 |   Crawler   |  Extraction  |    Chunking    |  Embedding  |  Vector Store  |
@@ -105,7 +105,7 @@ This chatbot can answer questions like:
 
 ---
 
-## Technology Stack
+## Software Dependencies and Libraries
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -122,7 +122,7 @@ This chatbot can answer questions like:
 
 ---
 
-## Project Structure
+## Codebase Organization
 
 ```
 legal-assistance-agent/
@@ -165,7 +165,7 @@ legal-assistance-agent/
 
 ---
 
-## Prerequisites
+## System Requirements
 
 1. **Python 3.9+**
 2. **pip** (comes with Python)
@@ -175,7 +175,7 @@ legal-assistance-agent/
 
 ---
 
-## Installation & Setup
+## Environment Configuration and Installation
 
 ### Step 1: Get the code
 ```bash
@@ -196,7 +196,7 @@ export ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 ---
 
-## Running the Application
+## Execution Instructions
 
 ### Full pipeline (first time)
 ```bash
@@ -238,9 +238,9 @@ python3 crawler/injection_test.py
 
 ---
 
-## How Each Component Works
+## Module-Level Implementation Details
 
-### 1. Web Crawler (`crawler/crawl.py`)
+### Stage 1: Data Acquisition (Web Crawler) (`crawler/crawl.py`)
 
 **What it does:** visits official government websites and downloads real visa policy pages.
 
@@ -256,7 +256,7 @@ python3 crawler/injection_test.py
 
 **Result:** 193 unique pages saved. One real, logged example of the robots.txt safeguard working: `travel.state.gov` disallowed the intended pages, and the crawler correctly skipped them rather than overriding site policy.
 
-### 2. Extraction (`crawler/extract.py`)
+### Stage 2: Content Normalization (Extraction) (`crawler/extract.py`)
 
 **What it does:** strips navigation, footers, and banners from raw pages, keeping only real content.
 
@@ -271,7 +271,7 @@ python3 crawler/injection_test.py
 
 **Result:** 191 clean documents from 193 raw pages (2 near-duplicates dropped).
 
-### 3. Chunking (`crawler/chunk.py`)
+### Stage 3: Document Segmentation (Chunking) (`crawler/chunk.py`)
 
 **What it does:** splits documents into small, focused pieces suitable for retrieval, using two distinct strategies.
 
@@ -283,7 +283,7 @@ python3 crawler/injection_test.py
 
 **Result:** 1,226 fixed-size chunks; 1,323 structure-aware chunks (220 duplicate boilerplate chunks automatically merged - mostly repeated cross-reference text shared across USCIS Policy Manual chapters).
 
-### 4-5. Embedding & Vector Database (`crawler/embed_index.py`)
+### Stages 4-5: Vector Representation and Indexing (`crawler/embed_index.py`)
 
 **What it does:** converts every chunk into a numeric vector capturing its meaning, and stores all vectors in a searchable database.
 
@@ -295,7 +295,7 @@ python3 crawler/injection_test.py
 5. Metadata filtering is enabled on `visa_category`, `page_type`, and `source`
 6. An automatic smoke test runs after indexing, confirming a test query returns a sensibly close match
 
-### 7-9. Retrieval, Reranking, Generation (`crawler/app.py`, `retrieval.py`, `rerank.py`)
+### Stages 7-9: Retrieval, Reranking, and Response Generation (`crawler/app.py`, `retrieval.py`, `rerank.py`)
 
 **Retrieval (Stage 7)** — three modes implemented in `retrieval.py`:
 - **Dense:** searches by meaning using the embeddings
@@ -316,7 +316,7 @@ python3 crawler/injection_test.py
 
 ---
 
-## Data Flow: End to End
+## Query Processing Sequence
 
 ```
 1. User types a question in the chat box
@@ -351,7 +351,7 @@ python3 crawler/injection_test.py
 
 ---
 
-## Configuration
+## System Parameters and Hyperparameters
 
 ### Embedding / Vector DB (`crawler/embed_index.py`)
 
@@ -384,7 +384,7 @@ python3 crawler/injection_test.py
 
 ---
 
-## Ethics & Safety Safeguards
+## Responsible-AI Controls and Safety Mechanisms
 
 Two safeguards are implemented and verified with **real, logged tests**, not just claims:
 
@@ -405,7 +405,7 @@ The system prompt instructs the model to never predict case outcomes or make ind
 
 ---
 
-## Golden Evaluation Set & Results
+## Benchmark Dataset and Empirical Results
 
 A 40-item evaluation set (`reports/golden_set_draft.csv`) spans six required categories:
 
@@ -433,7 +433,7 @@ Each item is grounded in a real government source URL; 15 of 40 have been indepe
 
 ---
 
-## Key Design Decisions
+## Architectural Rationale
 
 | Decision | Why |
 |---|---|
@@ -447,7 +447,7 @@ Each item is grounded in a real government source URL; 15 of 40 have been indepe
 
 ---
 
-## Troubleshooting
+## Diagnostic Reference
 
 **`ModuleNotFoundError: No module named 'X'`**
 Fix: `pip3 install -r requirements.txt`
@@ -469,7 +469,7 @@ This was a real bug caught and fixed during development (see `crawler/evaluate.p
 
 ---
 
-## Future Enhancements
+## Planned Extensions
 
 - Stage 6 re-chunk migration demonstration (delete-and-verify-no-orphans, measured delta)
 - Cross-encoder reranking as an additional comparison point
@@ -480,7 +480,7 @@ This was a real bug caught and fixed during development (see `crawler/evaluate.p
 
 ---
 
-## Course Requirements & AI Usage Disclosure
+## Academic Compliance and AI Tool Attribution
 
 This project was built for MSAI 633 (Residency Project) at the University of the Cumberlands.
 
