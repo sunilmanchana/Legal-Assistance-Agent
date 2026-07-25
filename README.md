@@ -121,7 +121,21 @@ This chatbot can answer questions like:
 | Evaluation | Custom harness + `anthropic` SDK | B0-B3 baseline comparison, bootstrap confidence intervals, McNemar's test |
 
 
+# Technology Stack
 
+| Stage | Technology | Why we chose it |
+|---|---|---|
+| Crawling | `requests` + `BeautifulSoup` | Government pages are plain HTML; lightweight and battle-tested for polite, rule-following crawling |
+| PDF reading | `pdfplumber` | Form instruction PDFs contain fee tables and eligibility tables that need real table extraction, not just raw text |
+| Chunking | Custom Python | No library builds our exact deterministic, content-hashed chunk ID scheme required by the course spec |
+| Embeddings | `all-MiniLM-L6-v2` (ONNX) | Small and fast, runs locally on a laptop; avoids a heavy separate PyTorch install |
+| Keyword search | `rank_bm25` | Catches exact legal terms like "Form I-129" or "214(h)" that meaning-based search can blur |
+| Vector store | ChromaDB | Free, local, supports metadata filtering and a clean delete-by-ID path needed for re-chunk migration |
+| Reranking | Claude Haiku | Avoids a heavy local cross-encoder install; course explicitly allows an LLM reranker instead |
+| Answer writing | Claude Sonnet | Highest-stakes step in the pipeline; worth the stronger model since a person may rely on this answer |
+| Chat interface | Streamlit | Turns a plain Python script into a working chat website fast, no separate HTML/CSS/JS build needed |
+| Evaluation | Custom harness + `anthropic` SDK | No off-the-shelf tool does B0-B3 baselines, bootstrap confidence intervals, and McNemar's test together |
+---
 
 ## Codebase Organization
 
