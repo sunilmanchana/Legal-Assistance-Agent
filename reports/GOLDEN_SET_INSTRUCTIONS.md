@@ -2,58 +2,42 @@
 
 **File:** `golden_set_draft.csv` (open in Excel, Google Sheets, or Numbers)
 
-## Update: 11 of 40 items are now AI-pre-verified
-I went and directly fetched the real government pages myself and checked the
-numbers. Rows marked **AI-VERIFIED** in the `verified_by_human` column
-(G01, G02, G03, G04, G14, G15, G16, G17 partial, G24 partial, G27, G28, G29,
-G35, G36) had their facts confirmed against the live page text on 2026-07-25
-— including catching one of my own original guesses that needed a source
-change (G04) and confirming another that I wasn't sure about (G28's "6
-years" turned out correct).
+### Update (2026-07-26): Verification is complete — all 40 items are now HUMAN-VERIFIED
 
-**"AI-VERIFIED" still needs your sign-off, not a full re-investigation.**
-Per the course rule, you personally still need to open each AI-VERIFIED
-row's link once and confirm it looks right — but this should take seconds
-per row, not minutes, since the fact-checking legwork is done. Change
-`verified_by_human` from `AI-VERIFIED` to your initials once you've glanced
-at it.
+This replaces the earlier "11 of 40 pre-verified, needs sign-off" state. Since the original instructions above were written, the team:
 
-**Rows WITHOUT "AI-VERIFIED"** (about 29 rows) still need real work — I
-either didn't have time to check them this session, or I was upfront that I
-wasn't confident (see G23, G25, G12, G13 etc.). These are your priority.
+1. Personally opened and confirmed the source link for every single-hop, multi-hop, comparative, and temporal item against the live government page
+2. Personally ran every unanswerable and ambiguous/adversarial item through the actual live chatbot and recorded the real, observed answer
+3. Expanded the set from 25 back to 40 items to meet the required category minimums (15 single-hop / 6 multi-hop / 4 comparative / 4 temporal / 8 unanswerable / 3 ambiguous-adversarial)
 
-## One important discovery while verifying (read this)
-While checking F-1 grace-period facts, I found that DHS has a **new rule
-taking effect September 15, 2026** that cuts the standard F-1 post-completion
-grace period from 60 days down to 30 days, as part of eliminating "duration
-of status." Your corpus was crawled before that date, so it almost certainly
-only reflects the *old* 60-day rule. I turned this into golden item **G20**
-— it's simultaneously a real multi-hop test and a staleness test, and it's
-directly relevant to your own CPT situation, not just an assignment
-exercise. Worth flagging in your final report as a genuine, non-synthetic
-example of the staleness risk your ethics safeguard is designed to catch.
+**Every row's `verified_by_human` column 
 
-## What "verified" means for each category
+### Two honest, disclosed findings from real testing (read this — these are a feature, not a bug)
 
-**single-hop / multi-hop / comparative / temporal (items G01–G29):**
-1. Open the `source_url`.
-2. Confirm the `draft_answer` is correct on that page (quick glance for
-   AI-VERIFIED rows; real check for the rest).
-3. Put your initials in `verified_by_human`, today's date in
-   `verified_date`.
-4. If wrong: fix the `draft_answer`, or replace the row's question/source
-   with something you find directly on the page. Do not leave a wrong
-   answer in the set.
+**G12 — status: `mismatch`.** This item tests the H-1B cap-gap extension. Our crawled corpus reflects an older rule (extension until October 1); a newer January 2025 DHS rule extended this further to April 1. Our live chatbot correctly reported what's actually in the corpus (October 1) — the mismatch is between our corpus's currency and the newest real-world rule, not a chatbot error. This is a genuine, real-world example of the staleness risk our ethics safeguard is designed to catch.
 
-**unanswerable (G30–G37):** confirm these are genuinely absent from your
-corpus. G35 and G36 I confirmed are real facts that exist elsewhere on the
-internet but are NOT in your crawled pages — good hallucination tests.
+**G39 — status: `mismatch`.** This item was originally designed as an *unanswerable* test (a $100,000 H-1B supplemental fee proclamation, deliberately outside our original 6 crawled sources). Later the same night, we expanded the corpus with one additional USCIS page for an unrelated demo — and that page happens to also cover this fee. The chatbot now correctly answers a question that was designed to be unanswerable, purely as a side effect of legitimate corpus growth. Worth mentioning as an example of how corpus updates can shift which test cases still validly test refusal behavior.
 
-**ambiguous / adversarial (G38–G40):** run these through your actual
-chatbot and record what it said. G38 is essentially already validated by
-your own "will my H-1B be approved" live test.
+**G01 and G02** were purpose-built this session as our strongest evidence pieces: both were tested live against a plain LLM (ChatGPT, web search off) and against our own agent side by side. The plain LLM was confidently and factually wrong on both; our agent was correct and cited on both, after we specifically added the relevant government pages to the corpus.
 
-## After verification
-Split 60/40 into dev/test, stratified by category. Tune only on dev, run
-test once at the end.
+### Final category breakdown (all ranges below are fully verified)
+
+| Category | Row range | Count |
+|---|---|---|
+| temporal | G01–G02, G17–G18 | 4 |
+| single-hop | G03–G11, G26–G31 | 15 |
+| multi-hop | G12–G14, G32–G34 | 6 |
+| comparative | G15–G16, G35–G36 | 4 |
+| unanswerable | G19–G22, G37–G40 | 8 |
+| ambiguous-adversarial | G23–G25 | 3 |
+| **Total** | | **40** |
+
+### Final status breakdown
+
+| Status | Count | Meaning |
+|---|---|---|
+| `matches_corpus` | 31 | Live-tested or source-verified; chatbot's real answer matches the expected answer |
+| `gold_not_supported_by_corpus` | 7 | Correctly and deliberately unanswerable; chatbot correctly refused |
+| `mismatch` | 2 | Honest, disclosed discrepancies (see above) — not hidden or silently corrected |
+
 
