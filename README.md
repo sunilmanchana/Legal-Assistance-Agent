@@ -434,7 +434,7 @@ A 40-item evaluation set (`reports/golden_set_draft.csv`) spans six required cat
 | Unanswerable (refusal test) | 8 |
 | Ambiguous / adversarial | 3 |
 
-Each item is grounded in a real government source URL; 15 of 40 have been independently fact-checked against the live source pages as of this writing.
+Each item is grounded in a real government source URL; 40 of 40 have been independently fact-checked against the live source pages as of this writing.
 
 ### Real evaluation results (40-item run, `crawler/evaluate.py` + `summarize.py`)
 
