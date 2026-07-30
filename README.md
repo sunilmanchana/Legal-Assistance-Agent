@@ -447,6 +447,30 @@ Each item is grounded in a real government source URL; 40 of 40 have been indepe
 
 **Honest interpretation:** B3 has the best retrieval quality and the lowest over-refusal rate among the real search methods, and both B2/B3 achieve 100% correct-refusal on genuinely unanswerable questions. However, Recall@20 (~60-67%) shows the correct source isn't always retrieved, which caps downstream correctness - a McNemar's test found no statistically significant difference between B2 and B3 at this sample size (p = 0.68), which we report honestly rather than overclaiming. Full analysis in `reports/06_final_performance.md`.
 
+**Recall@20:** binary per question -- 1 if the gold source URL appears anywhere among the top 20 retrieved chunks, 0 if it does not -- then averaged across all
+questions. Because most golden-set items have a single canonical source rather than several equally valid ones, this is a hit rate (did the correct source appear
+at all) rather than a fractional proportion of multiple relevant documents retrieved.
+**MRR (Mean Reciprocal Rank): **for each question, the reciprocal of the rank position (1/rank) at which the first chunk matching the gold URL appears in the
+full top-20 list, scored as 0 if no match appears at all; MRR is the mean of that value across all questions. A correct source ranked 1st scores 1.0 for that
+question; ranked 4th scores 0.25.
+**nDCG@10 (normalized Discounted Cumulative Gain): **computed only over the top 10 retrieved chunks, weighting a correct match more heavily the closer
+it is to rank 1:
+**DCG@10 = Σ (relᵢ / log₂ (i + 1)) for i = 1..10, where relᵢ = 1 if position i's chunk matches the gold URL,
+else 0. IDCG@10 = Σ (1 / log₂ (i + 1)) for i = 1..m, where m = the number of matching chunks actually found
+in the top 10 (the score if they had all been ranked at the very top). nDCG@10 = DCG@10 / IDCG@10 (0 if m
+= 0, i.e., no relevant chunk appears in the top 10 at all).**
+This rewards a system more for placing the correct source near rank 1 than near rank 10, unlike Recall@20 or MRR's simpler treatment, which is why
+nDCG@10 is reported alongside them rather than in place of either.
+B1 and B2 both retrieve from the fixed-size chunk collection; B3 retrieves from the structure-aware collection and adds the reranking step, so the B2-versus-
+B3 comparison isolates the combined effect of switching chunking strategy and adding reranking together, not reranking in isolation -- an honest scoping note
+on what the ablation does and does not isolate. B3 nonetheless achieves the best or tied-best result on all three retrieval-quality metrics and the lowest over-
+refusal rate of any real search method, while B0's high raw “correctness” largely reflects facts already present in the base model's training data rather than any
+contribution from retrieval.
+Bootstrap 95% confidence intervals (2,000 resamples, fixed random seed for reproducibility) were computed for Recall@20, and a paired McNemar's test
+comparing B2 and B3 on 32 items with a graded answer returned a statistic of 0.167 and p = 0.68 -- not statistically significant at this sample size, reported
+honestly rather than overstated. p50/p95 latency was also recorded per baseline as a required headline metric, showing the expected cost of the additional
+reranking and hybrid-search steps in B3 relative to the simpler baselines.
+
 ---
 
 ## Golden Evaluation Set — Column and Category Reference
